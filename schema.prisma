@@ -1,0 +1,64 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite"; url = env("DATABASE_URL") }
+
+enum Role { STAFF MANAGER }
+enum MovementType { STOCK_IN SALE DAMAGE ADJUSTMENT }
+enum MovementSource { MANUAL AI_CONFIRMED }
+enum ProposalStatus { PENDING CONFIRMED CANCELLED EXPIRED }
+
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role @default(STAFF)
+  movements StockMovement[]
+  proposals StockProposal[]
+  createdAt DateTime @default(now())
+}
+model Supplier { id String @id @default(cuid()); name String @unique; products Product[] }
+model Product {
+  id String @id @default(cuid())
+  sku String @unique
+  name String
+  category String
+  quantity Int @default(0)
+  reorderLevel Int @default(5)
+  costPrice Float
+  salePrice Float
+  supplierId String?
+  supplier Supplier? @relation(fields:[supplierId], references:[id])
+  movements StockMovement[]
+  proposals StockProposal[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model StockMovement {
+  id String @id @default(cuid())
+  productId String
+  product Product @relation(fields:[productId], references:[id])
+  type MovementType
+  source MovementSource @default(MANUAL)
+  quantityBefore Int
+  changeQuantity Int
+  quantityAfter Int
+  reference String?
+  note String?
+  userId String
+  user User @relation(fields:[userId], references:[id])
+  createdAt DateTime @default(now())
+}
+model StockProposal {
+  id String @id @default(cuid())
+  productId String
+  product Product @relation(fields:[productId], references:[id])
+  type MovementType
+  quantity Int
+  reference String?
+  status ProposalStatus @default(PENDING)
+  expiresAt DateTime
+  userId String
+  user User @relation(fields:[userId], references:[id])
+  confirmedMovementId String? @unique
+  createdAt DateTime @default(now())
+}

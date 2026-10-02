@@ -1,0 +1,12 @@
+{
+  "name": "stocksense",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
+    "start": "npm run start --workspace server",
+    "db:push": "npm run db:push --workspace server",
+    "db:seed": "npm run db:seed --workspace server"
+  },
+  "workspaces": ["client", "server"],
+  "devDependencies": { "concurrently": "^9.1.2" }
+}
